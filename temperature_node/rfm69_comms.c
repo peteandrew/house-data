@@ -25,13 +25,13 @@ void select(void)
     // set slave select low
     OUT_REG &= ~(1 << SS_PIN);
 
-    _delay_us(150);
+    _delay_us(1);
 }
 
 
 void unselect(void)
 {
-    _delay_us(150);
+    _delay_us(1);
 
     // set slave select high
     OUT_REG |= (1 << SS_PIN);

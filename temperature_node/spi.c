@@ -40,11 +40,11 @@ unsigned char spi_send_byte(unsigned char data)
             OUT_REG &= ~(1 << DATAOUT_PIN);  
         }
 
-        _delay_us(100);
+        _delay_us(1);
 
         // set clock high
         OUT_REG |= (1 << CLOCK_PIN);
-        _delay_us(200);
+        _delay_us(1);
 
         received <<= 1;
 
@@ -59,7 +59,7 @@ unsigned char spi_send_byte(unsigned char data)
   
         // set clock low
         OUT_REG &= ~(1 << CLOCK_PIN);
-        _delay_us(100);
+        _delay_us(1);
 
         data <<= 1;
     }

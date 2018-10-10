@@ -8,7 +8,10 @@
 #include "spi.h"
 #include "rfm69_comms.h"
 
-volatile uint8_t watchdog_counter = 14;
+#define NODE_ID 3
+#define NODE_TYPE 'T'
+
+volatile uint8_t watchdog_counter = 2;
 
 ISR(WDT_OVERFLOW_vect)
 {
@@ -22,6 +25,7 @@ int main(void)
 
     // set standby mode
     write_reg(0x01, 0x04);
+    // shorter delay
     _delay_ms(1);
 
     // config
@@ -38,7 +42,8 @@ int main(void)
         { 0x08, 0x40 }, // REG_FRFMID, RF_FRFMID_433
         { 0x09, 0x00 }, // REG_FRFLSB, RF_FRFLSB_433
 
-        { 0x11, 0x94 }, // REG_PALEVEL, PA0_ON | power level 20
+        //{ 0x11, 0x94 }, // REG_PALEVEL, PA0_ON | power level 20
+        { 0x11, 0x9C }, // REG_PALEVEL, PA0_ON | power level 28
 
         { 0x19, 0x42 }, // REG_RXBW
 
@@ -57,9 +62,11 @@ int main(void)
 
     for (uint8_t i = 0; CONFIG[i][0] != 255; i++) {
         write_reg(CONFIG[i][0], CONFIG[i][1]);
+        // should be 1us
         _delay_ms(1);
     }
 
+    // not needed?
     _delay_ms(10);
 
     select();
@@ -68,9 +75,11 @@ int main(void)
     for (uint8_t i = 0; i < 16; i++)
         spi_send_byte(key[i]);
     unselect();
+    // needed?
     _delay_ms(1);
     write_reg(0x3D, 0x13); // REG_PACKETCONFIG2, AES ON
 
+    // needed?
     _delay_ms(10);
 
     uint8_t scratchpad[2] = {0,0};
@@ -86,7 +95,8 @@ int main(void)
 
     while(1) {
         // Count of 14 = ~60s
-        if (watchdog_counter > 13) {
+        // Count of 1 = ~4s
+        if (watchdog_counter > 1) {
 
             if(therm_reset())
                 error = 1;
@@ -107,10 +117,11 @@ int main(void)
             // write to FIFO
             select();
             spi_send_byte(0x80); // Write to FIFO (0x00)
-            spi_send_byte(5); // buffer size + 3
-            spi_send_byte(1);
-            spi_send_byte(2);
-            spi_send_byte(0);
+            spi_send_byte(6); // frame length
+            spi_send_byte(1); // to address ID
+            spi_send_byte(NODE_ID); // from address ID
+            spi_send_byte(0); // send ack
+            spi_send_byte(NODE_TYPE);
             spi_send_byte(scratchpad[1]);
             spi_send_byte(scratchpad[0]);
             unselect();
@@ -122,6 +133,7 @@ int main(void)
             while ((read_reg(0x28) & 0x08) == 0x00);
 
             // set standby mode
+            // sleep mode?
             write_reg(0x01, 0x04);
 
             watchdog_counter = 0;
