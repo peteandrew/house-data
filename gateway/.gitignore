@@ -1,0 +1,3 @@
+*.pyc
+temps.db
+nohup.out
