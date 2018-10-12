@@ -57,7 +57,7 @@ while True:
             message = str(rfm69_temp[0]) + ' ' + str(rfm69_temp[1]) + ' ' + str(rfm69_temp[2])
             client = mqtt.Client()
             client.connect('localhost')
-            client.publish('temps', message)
+            client.publish('temp', message)
 
         time.sleep(0.1)
 
