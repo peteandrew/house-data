@@ -32,6 +32,7 @@ def get_rfm69_temp():
 	print(valHex)
         valInt = int(valHex, 16)
         tempWhole = valInt >> 4
+        tempWhole = -(tempWhole & 0x800) | (tempWhole & 0x7ff)
         tempFrac = float(0)
         if valInt & 0x08:
             tempFrac += 0.5
