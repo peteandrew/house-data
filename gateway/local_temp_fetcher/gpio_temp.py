@@ -29,3 +29,6 @@ def read_temp():
     temp_string = lines[1][equals_pos+2:]
     temp_c = float(temp_string) / 1000.0
     return temp_c
+
+if __name__ == '__main__':
+    print(read_temp())

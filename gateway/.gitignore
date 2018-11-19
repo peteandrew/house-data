@@ -1,0 +1,4 @@
+*.pyc
+temps.db
+nohup.out
+sensor_data.db
