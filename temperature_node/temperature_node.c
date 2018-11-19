@@ -94,9 +94,10 @@ int main(void)
     sei();
 
     while(1) {
+        // Count of 28 = ~120s
         // Count of 14 = ~60s
         // Count of 1 = ~4s
-        if (watchdog_counter > 1) {
+        if (watchdog_counter > 28) {
 
             if(therm_reset())
                 error = 1;
@@ -132,9 +133,8 @@ int main(void)
             // wait for packet to be sent
             while ((read_reg(0x28) & 0x08) == 0x00);
 
-            // set standby mode
-            // sleep mode?
-            write_reg(0x01, 0x04);
+            // set sleep
+            write_reg(0x01, 0x00);
 
             watchdog_counter = 0;
         }
