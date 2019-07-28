@@ -11,7 +11,7 @@ calibration_params = bme280.load_calibration_params(bus, address)
 
 while True:
     data = bme280.sample(bus, address, calibration_params)
-    print data
+    print(data)
 
     client = mqtt.Client()
     client.connect('localhost')

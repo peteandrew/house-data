@@ -3,3 +3,5 @@ bin
 pyvenv.cfg
 __pycache__
 nohup.out
+include
+sensor_data.db

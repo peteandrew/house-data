@@ -1,9 +1,8 @@
-from flask import Flask
+from flask import Flask, g, jsonify, abort
 import sqlite3
-from flask import g
 from datetime import datetime
 
-DATABASE = '../gateway/sensor_data.db'
+DATABASE = '../gateway/store_sensor_data/sensor_data.db'
 
 
 app = Flask(__name__)
@@ -27,22 +26,16 @@ def close_connection(exception):
 def temps(node):
     temp_row = None
     try:
-        cur = get_db().execute('SELECT temp, time FROM temps WHERE node=? ORDER BY time DESC LIMIT 1', [node])
+        cur = get_db().execute('SELECT temp, time, rssi FROM temps WHERE node=? ORDER BY time DESC LIMIT 1', [node])
         temp_row = cur.fetchone()
         cur.close()
     except sqlite3.OperationalError:
-        return '-200'
+        return jsonify(message="Database error"), 500
 
     if temp_row is None:
-        return '-100'
-    else:
-        dt = datetime.strptime(temp_row[1], '%Y-%m-%d %H:%M:%S')
-        dt_now = datetime.now()
-        diff = dt_now - dt
-        app.logger.info(diff.seconds)
-        if diff.seconds > 300:
-            return '-100'
-        return str(temp_row[0])
+        return jsonify(message="no data for node"), 404
+
+    return jsonify({'temp': temp_row[0], 'time': temp_row[1], 'rssi': temp_row[2]})
 
 
 @app.route("/humidities/<int:node>")

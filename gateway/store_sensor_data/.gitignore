@@ -1,0 +1,5 @@
+bin
+include
+lib
+nohup.out
+sensor_data.db

@@ -4,37 +4,37 @@ import sys
 import paho.mqtt.client as mqtt
 
 def on_temp_message(client, userdata, msg):
-    msg_components = str(msg.payload).split(' ')
-    print 'Temperature reading'
-    print msg_components
+    msg_components = str(msg.payload)[2:-1].split(' ')
+    print('Temperature reading')
+    print(msg_components)
     try:
         c = db_conn.cursor()
         c.execute("INSERT INTO temps VALUES (?, datetime('now'), ?, ?)", (int(msg_components[0]), int(msg_components[2]), float(msg_components[1])))
         db_conn.commit()
     except sqlite3.OperationalError as e:
-        print e
+        print(e)
 
 def on_humidity_message(client, userdata, msg):
-    msg_components = str(msg.payload).split(' ')
-    print 'Humidity reading'
-    print msg_components
+    msg_components = str(msg.payload)[2:-1].split(' ')
+    print('Humidity reading')
+    print(msg_components)
     try:
         c = db_conn.cursor()
         c.execute("INSERT INTO humidities VALUES (?, datetime('now'), ?, ?)", (int(msg_components[0]), int(msg_components[2]), float(msg_components[1])))
         db_conn.commit()
     except sqlite3.OperationalError as e:
-        print e
+        print(e)
 
 def on_pressure_message(client, userdata, msg):
-    msg_components = str(msg.payload).split(' ')
-    print 'Pressure reading'
-    print msg_components
+    msg_components = str(msg.payload)[2:-1].split(' ')
+    print('Pressure reading')
+    print(msg_components)
     try:
         c = db_conn.cursor()
         c.execute("INSERT INTO pressures VALUES (?, datetime('now'), ?, ?)", (int(msg_components[0]), int(msg_components[2]), float(msg_components[1])))
         db_conn.commit()
     except sqlite3.OperationalError as e:
-        print e
+        print(e)
 
 
 db_conn = sqlite3.connect('sensor_data.db')
