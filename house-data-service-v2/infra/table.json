@@ -9,7 +9,7 @@
             "AttributeType": "N"
         }
     ],
-    "TableName": "HouseDataV2",
+    "TableName": "HouseData",
     "KeySchema": [
             {
                 "AttributeName": "Node",
