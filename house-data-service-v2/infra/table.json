@@ -1,0 +1,27 @@
+{
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "DateTime",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "Node",
+            "AttributeType": "N"
+        }
+    ],
+    "TableName": "HouseDataV2",
+    "KeySchema": [
+            {
+                "AttributeName": "Node",
+                "KeyType": "HASH"
+            },
+            {
+                "AttributeName": "DateTime",
+                "KeyType": "RANGE"
+            }
+    ],
+        "ProvisionedThroughput": {
+            "WriteCapacityUnits": 5,
+            "ReadCapacityUnits": 5
+        }
+}
