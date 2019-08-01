@@ -1,7 +1,7 @@
 {
     "AttributeDefinitions": [
         {
-            "AttributeName": "DateTime",
+            "AttributeName": "ItemDateTime",
             "AttributeType": "S"
         },
         {
@@ -16,7 +16,7 @@
                 "KeyType": "HASH"
             },
             {
-                "AttributeName": "DateTime",
+                "AttributeName": "ItemDateTime",
                 "KeyType": "RANGE"
             }
     ],
