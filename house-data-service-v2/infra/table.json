@@ -5,14 +5,14 @@
             "AttributeType": "S"
         },
         {
-            "AttributeName": "Node",
-            "AttributeType": "N"
+            "AttributeName": "NodeAndType",
+            "AttributeType": "S"
         }
     ],
     "TableName": "HouseData",
     "KeySchema": [
             {
-                "AttributeName": "Node",
+                "AttributeName": "NodeAndType",
                 "KeyType": "HASH"
             },
             {

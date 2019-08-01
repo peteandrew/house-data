@@ -7,12 +7,13 @@ client = boto3.client('dynamodb')
 
 @app.route("/last_temps/<int:node>")
 def last_temps(node):
+    node_and_type = '{}_T'.format(str(node))
     response = client.query(
         TableName='HouseData',
-        KeyConditionExpression='Node = :node',
+        KeyConditionExpression='NodeAndType = :node_and_type',
         ExpressionAttributeValues={
-            ':node': {
-                'N': str(node)
+            ':node_and_type': {
+                'S': str(node_and_type)
             }
         },
         ScanIndexForward=False,
@@ -26,7 +27,7 @@ def last_temps(node):
     print(item)
     dt = item['ItemDateTime']['S']
     try:
-        temp = float(item['Values']['M']['Temperature']['N'])
+        temp = float(item['Value']['N'])
     except KeyError:
         temp = 0
     try:    

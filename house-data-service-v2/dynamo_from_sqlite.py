@@ -16,12 +16,13 @@ cur = db.execute('SELECT node, time, temp, rssi FROM temps ORDER BY time')
 for row in cur:
     print(row)
     try:
+        node_and_type = '{}_T'.format(str(row[0]))
         response = client.put_item(
             TableName='HouseData',
-            ConditionExpression='attribute_not_exists(Node) AND attribute_not_exists(ItemDateTime)',
+            ConditionExpression='attribute_not_exists(NodeAndType) AND attribute_not_exists(ItemDateTime)',
             Item={
-                'Node': {
-                    'N': str(row[0]),
+                'NodeAndType': {
+                    'S': node_and_type,
                 },
                 'ItemDateTime': {
                     'S': row[1]
@@ -29,12 +30,8 @@ for row in cur:
                 'RSSI': {
                     'N': str(row[3])
                 },
-                'Values': {
-                    'M': {
-                        'Temperature': {
-                            'N': str(row[2])
-                        }
-                    }
+                'Value': {
+                    'N': str(row[2])
                 }
             }
         )
