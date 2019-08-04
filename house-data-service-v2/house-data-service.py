@@ -1,12 +1,12 @@
 from flask import Flask, g, jsonify, abort, request
 import boto3
+import json
 
 app = Flask(__name__)
 
 client = boto3.client('dynamodb')
 
-@app.route("/nodes/<int:node>")
-def node_data(node):
+def get_node_data(request, node):
     types = []
 
     type = request.args.get('type')
@@ -53,3 +53,28 @@ def node_data(node):
         return jsonify(message='no data found for node'), 404
 
     return jsonify(node_data)
+
+
+def post_node_data(request, node):
+    data = request.get_json()
+    type = list(data.keys())[0]
+    if type not in ['T', 'H', 'P']:
+        return jsonify(message='type must be T, H or P'), 400
+
+    sensor_data = data[type]
+    required_attributes = ['time', 'value', 'rssi']
+    for attribute in required_attributes:
+        if attribute not in sensor_data.keys():
+            return jsonify(message='required attribute {} not found'.format(attribute)), 400
+
+    print(node)
+    print(data)
+    return ""
+
+
+@app.route("/nodes/<int:node>", methods=['GET', 'POST'])
+def node_data(node):
+    if request.method == 'GET':
+        return get_node_data(request, node)
+    else:
+        return post_node_data(request, node)
