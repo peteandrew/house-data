@@ -1,10 +1,13 @@
 from flask import Flask, g, jsonify, abort, request
 import boto3
+import botocore
 import json
+
 
 app = Flask(__name__)
 
 client = boto3.client('dynamodb')
+
 
 def get_node_data(request, node):
     types = []
@@ -67,9 +70,31 @@ def post_node_data(request, node):
         if attribute not in sensor_data.keys():
             return jsonify(message='required attribute {} not found'.format(attribute)), 400
 
-    print(node)
-    print(data)
-    return ""
+    node_and_type = '{}_{}'.format(str(node), type)
+    try:
+        client.put_item(
+            TableName='HouseData',
+            ConditionExpression='attribute_not_exists(NodeAndType) AND attribute_not_exists(ItemDateTime)',
+            Item={
+                'NodeAndType': {
+                    'S': node_and_type,
+                },
+                'ItemDateTime': {
+                    'S': sensor_data['time']
+                },
+                'RSSI': {
+                    'N': str(sensor_data['rssi'])
+                },
+                'Value': {
+                    'N': str(sensor_data['value'])
+                }
+            }
+        )
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            return jsonify(message="data already exists for sensor at that time"), 409
+
+    return jsonify(message="created"), 201
 
 
 @app.route("/nodes/<int:node>", methods=['GET', 'POST'])
