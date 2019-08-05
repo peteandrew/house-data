@@ -16,9 +16,9 @@ def get_node_data(request, node):
     if type is not None:
         if type not in ['T', 'H', 'P']:
             return jsonify(message='type must be T, H or P'), 400
-        types.append(type)
+        types = [type]
     else:
-        types = types + ['T', 'H', 'P']
+        types = ['T', 'H', 'P']
 
     node_data = {}
 
