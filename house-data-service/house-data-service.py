@@ -42,30 +42,29 @@ def temps(node):
 def humidities(node):
     humidity_row = None
     try:
-        cur = get_db().execute('SELECT humidity FROM humidities WHERE node=? ORDER BY time DESC LIMIT 1', [node])
+        cur = get_db().execute('SELECT humidity, time, rssi FROM humidities WHERE node=? ORDER BY time DESC LIMIT 1', [node])
         humidity_row = cur.fetchone()
         cur.close()
     except sqlite3.OperationalError:
-        return '-200'
+        return jsonify(message="Database error"), 500
 
     if humidity_row is None:
-        return '0'
-    else:
-        return str(humidity_row[0])
+        return jsonify(message="no data for node"), 404
+
+    return jsonify({'humidity': humidity_row[0], 'time': humidity_row[1], 'rssi': humidity_row[2]})
 
 
 @app.route("/pressures/<int:node>")
 def pressures(node):
     pressure_row = None
     try:
-        cur = get_db().execute('SELECT pressure FROM pressures WHERE node=? ORDER BY time DESC LIMIT 1', [node])
+        cur = get_db().execute('SELECT pressure, time, rssi FROM pressures WHERE node=? ORDER BY time DESC LIMIT 1', [node])
         pressure_row = cur.fetchone()
         cur.close()
     except sqlite3.OperationalError:
-        return '-200'
+        return jsonify(message="Database error"), 500
 
     if pressure_row is None:
-        return '0'
-    else:
-        return str(pressure_row[0])
+        return jsonify(message="no data for node"), 404
 
+    return jsonify({'pressure': pressure_row[0], 'time': pressure_row[1], 'rssi': pressure_row[2]})
