@@ -35,10 +35,10 @@ while True:
     data = bme280.sample(bus, address, calibration_params)
     print(data)
 
-    if min_count % 2:
+    if min_count % 2 == 0:
         publish_temperature(data)
         publish_humidity(data)
-    elif min_count % 10:
+    elif min_count % 10 == 0:
         publish_pressure(data)
 
     time.sleep(60)
