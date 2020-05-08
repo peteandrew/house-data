@@ -24,31 +24,41 @@ def close_connection(exception):
 
 @app.route("/temps/<int:node>")
 def temps(node):
-    temp_row = None
     try:
         cur = get_db().cursor()
 
         cur.execute('SELECT temp, time, rssi FROM temps WHERE node=? ORDER BY time DESC LIMIT 1', [node])
         temp_row = cur.fetchone()
 
+        if temp_row is None:
+            return jsonify(message="no data for node"), 404
+
+        resp = {'temp': temp_row[0], 'time': temp_row[1], 'rssi': temp_row[2]}
+
         cur.execute("SELECT AVG(temp) FROM temps WHERE node=? AND time >= DATETIME('now', '-10 minute')", [node])
         avg_last_10_mins = cur.fetchone()[0]
+
+        if avg_last_10_mins is None:
+            return jsonify(resp)
 
         cur.execute("SELECT AVG(temp) FROM temps WHERE node=? AND time >= DATETIME('now', '-70 minute') AND time < DATETIME('now', '-60 minute')", [node])
         avg_60_mins_ago = cur.fetchone()[0]
 
+        cur.close()
+
+        if avg_60_mins_ago is None:
+            return jsonify(resp)
+
         temp_diff = avg_last_10_mins - avg_60_mins_ago
+        resp['temp_diff_60_min'] = temp_diff
 
         temp_change_per_min = temp_diff / 60
+        resp['avg_temp_change_per_min_60_min'] = temp_change_per_min
 
-        cur.close()
+        return jsonify(resp)
+
     except sqlite3.OperationalError:
         return jsonify(message="Database error"), 500
-
-    if temp_row is None:
-        return jsonify(message="no data for node"), 404
-
-    return jsonify({'temp': temp_row[0], 'time': temp_row[1], 'rssi': temp_row[2], 'temp_diff_60_min': temp_diff, 'avg_temp_change_per_min_60_min': temp_change_per_min})
 
 
 @app.route("/humidities/<int:node>")
@@ -69,27 +79,33 @@ def humidities(node):
 
 @app.route("/pressures/<int:node>")
 def pressures(node):
-    pressure_row = None
     try:
         cur = get_db().cursor()
         cur.execute('SELECT pressure, time, rssi FROM pressures WHERE node=? ORDER BY time DESC LIMIT 1', [node])
         pressure_row = cur.fetchone()
+        if pressure_row is None:
+            return jsonify(message="no data for node"), 404
+
+        resp = {'pressure': pressure_row[0], 'time': pressure_row[1], 'rssi': pressure_row[2]}
 
         cur.execute("SELECT AVG(pressure) FROM pressures WHERE node=? AND time >= DATETIME('now', '-1 hour')", [node]);
         avg_last_hour = cur.fetchone()[0]
+        if avg_last_hour is None:
+            return jsonify(resp)
 
         cur.execute("SELECT AVG(pressure) FROM pressures WHERE node=? AND time >= DATETIME('now', '-13 hour') AND time < DATETIME('now', '-12 hour')", [node]);
         avg_twelve_hours_ago = cur.fetchone()[0]
+        if avg_twelve_hours_ago is None:
+            return jsonify(resp)
 
         pressure_diff = avg_last_hour - avg_twelve_hours_ago
+        resp['pressure_change_12_hour'] = pressure_diff
 
         pressure_change_per_hour = pressure_diff / 12
+        resp['avg_pressure_change_per_hour_12_hour'] = pressure_change_per_hour
 
         cur.close()
+
+        return jsonify(resp)
     except sqlite3.OperationalError:
         return jsonify(message="Database error"), 500
-
-    if pressure_row is None:
-        return jsonify(message="no data for node"), 404
-
-    return jsonify({'pressure': pressure_row[0], 'time': pressure_row[1], 'rssi': pressure_row[2], 'pressure_change_12_hour': pressure_diff, 'avg_pressure_change_per_hour_12_hour': pressure_change_per_hour})
