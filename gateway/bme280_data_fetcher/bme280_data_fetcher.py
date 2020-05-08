@@ -12,22 +12,31 @@ bus = smbus.SMBus(port)
 calibration_params = bme280.load_calibration_params(bus, address)
 
 def publish_temperature(data):
-    client = mqtt.Client()
-    client.connect(MQTT_HOST)
-    message = '1 ' + str(data.temperature) + ' 0'
-    client.publish('temp', message)
+    try:
+        client = mqtt.Client()
+        client.connect(MQTT_HOST)
+        message = '1 ' + str(data.temperature) + ' 0'
+        client.publish('temp', message)
+    except OSError as err:
+        print("OS error: {0}".format(err))
 
 def publish_humidity(data):
-    client = mqtt.Client()
-    client.connect(MQTT_HOST)
-    message = '1 ' + str(data.humidity) + ' 0'
-    client.publish('humidity', message)
+    try:
+        client = mqtt.Client()
+        client.connect(MQTT_HOST)
+        message = '1 ' + str(data.humidity) + ' 0'
+        client.publish('humidity', message)
+    except OSError as err:
+        print("OS error: {0}".format(err))
 
 def publish_pressure(data):
-    client = mqtt.Client()
-    client.connect(MQTT_HOST)
-    message = '1 ' + str(data.pressure) + ' 0'
-    client.publish('pressure', message)
+    try:
+        client = mqtt.Client()
+        client.connect(MQTT_HOST)
+        message = '1 ' + str(data.pressure) + ' 0'
+        client.publish('pressure', message)
+    except OSError as err:
+        print("OS error: {0}".format(err))
 
 min_count = 0
 
