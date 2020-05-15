@@ -35,10 +35,21 @@ def temps(node):
 
         resp = {'temp': temp_row[0], 'time': temp_row[1], 'rssi': temp_row[2]}
 
+        cur.execute("SELECT MIN(temp) FROM temps WHERE node=? AND time >= DATETIME('now', '-24 hour')", [node])
+        min_temp_24_hour = cur.fetchone()[0]
+        if min_temp_24_hour:
+            resp['min_temp_24_hour'] = min_temp_24_hour
+
+        cur.execute("SELECT MAX(temp) FROM temps WHERE node=? AND time >= DATETIME('now', '-24 hour')", [node])
+        max_temp_24_hour = cur.fetchone()[0]
+        if max_temp_24_hour:
+            resp['max_temp_24_hour'] = max_temp_24_hour
+
         cur.execute("SELECT AVG(temp) FROM temps WHERE node=? AND time >= DATETIME('now', '-10 minute')", [node])
         avg_last_10_mins = cur.fetchone()[0]
 
         if avg_last_10_mins is None:
+            cur.close()
             return jsonify(resp)
 
         cur.execute("SELECT AVG(temp) FROM temps WHERE node=? AND time >= DATETIME('now', '-70 minute') AND time < DATETIME('now', '-60 minute')", [node])
