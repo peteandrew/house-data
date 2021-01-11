@@ -15,8 +15,8 @@ def publish_temperature(data):
     try:
         client = mqtt.Client()
         client.connect(MQTT_HOST)
-        message = '1 ' + str(data.temperature) + ' 0'
-        client.publish('temp', message)
+        message = str(data.temperature) + ' 0'
+        client.publish('sensors/temp/1', message)
     except OSError as err:
         print("OS error: {0}".format(err))
 
@@ -24,8 +24,8 @@ def publish_humidity(data):
     try:
         client = mqtt.Client()
         client.connect(MQTT_HOST)
-        message = '1 ' + str(data.humidity) + ' 0'
-        client.publish('humidity', message)
+        message = str(data.humidity) + ' 0'
+        client.publish('sensors/humidity/1', message)
     except OSError as err:
         print("OS error: {0}".format(err))
 
@@ -33,8 +33,8 @@ def publish_pressure(data):
     try:
         client = mqtt.Client()
         client.connect(MQTT_HOST)
-        message = '1 ' + str(data.pressure) + ' 0'
-        client.publish('pressure', message)
+        message = str(data.pressure) + ' 0'
+        client.publish('sensors/pressure/1', message)
     except OSError as err:
         print("OS error: {0}".format(err))
 

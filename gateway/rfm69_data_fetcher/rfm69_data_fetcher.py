@@ -21,15 +21,10 @@ def get_rfm69_temp():
         temp_data_msb = rfm69_data[0]
         temp_data_lsb = rfm69_data[1]
         if len(rfm69_data) > 2:
-            print(str(rfm69_data[0]))
             temp_data_msb = rfm69_data[1]
             temp_data_lsb = rfm69_data[2]
 
-        print(temp_data_msb)
-        print(temp_data_lsb)
-
         valHex = "0x%02x%02x" % (temp_data_msb, temp_data_lsb)
-        print(valHex)
         valInt = int(valHex, 16)
         tempWhole = valInt >> 4
         tempWhole = -(tempWhole & 0x800) | (tempWhole & 0x7ff)
@@ -52,13 +47,18 @@ while True:
     try:
         rfm69_temp = get_rfm69_temp()
         if rfm69_temp:
+            node = str(rfm69_temp[0])
+            message = str(rfm69_temp[1]) + ' ' + str(rfm69_temp[2])
             print(str(datetime.now()))
-            print('in rfm69_data_fetcher.py')
-            print(rfm69_temp)
-            message = str(rfm69_temp[0]) + ' ' + str(rfm69_temp[1]) + ' ' + str(rfm69_temp[2])
-            client = mqtt.Client()
-            client.connect('localhost')
-            client.publish('temp', message)
+            print(node)
+            print(message)
+
+            try:
+                client = mqtt.Client()
+                client.connect('192.168.0.147')
+                client.publish('sensors/temp/' + node, message)
+            except OSError as err:
+                print("OS error: {0}".format(err))
 
         time.sleep(0.1)
 
