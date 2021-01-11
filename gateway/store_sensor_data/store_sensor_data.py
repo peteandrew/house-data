@@ -1,5 +1,6 @@
 import time
 import sqlite3
+import os
 import sys
 import paho.mqtt.client as mqtt
 
@@ -37,7 +38,9 @@ def on_pressure_message(client, userdata, msg):
         print(e)
 
 
-db_conn = sqlite3.connect('sensor_data.db')
+db_file = os.environ.get('SENSOR_DB_FILE', 'sensor_data.db')
+db_conn = sqlite3.connect(db_file)
+
 c = db_conn.cursor()
 c.execute("CREATE TABLE IF NOT EXISTS temps (node integer, time text, rssi integer, temp real)")
 c.execute("CREATE TABLE IF NOT EXISTS humidities (node integer, time text, rssi integer, humidity real)")

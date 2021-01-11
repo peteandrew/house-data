@@ -1,8 +1,7 @@
 from flask import Flask, g, jsonify, abort
 import sqlite3
+import os
 from datetime import datetime
-
-DATABASE = '../gateway/store_sensor_data/sensor_data.db'
 
 
 app = Flask(__name__)
@@ -11,7 +10,8 @@ app = Flask(__name__)
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db_file = os.environ.get('SENSOR_DB_FILE', 'sensor_data.db')
+        db = g._database = sqlite3.connect(db_file)
     return db
 
 
