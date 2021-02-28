@@ -1,4 +1,4 @@
-from flask import Flask, g, jsonify, abort
+from flask import Flask, g, jsonify, abort, request
 import sqlite3
 import os
 from datetime import datetime
@@ -34,6 +34,10 @@ def temps(node):
             return jsonify(message="no data for node"), 404
 
         resp = {'temp': temp_row[0], 'time': temp_row[1], 'rssi': temp_row[2]}
+
+        if not request.args.get("full"):
+            cur.close()
+            return jsonify(resp)
 
         cur.execute("SELECT MIN(temp) FROM temps WHERE node=? AND time >= DATETIME('now', '-24 hour')", [node])
         min_temp_24_hour = cur.fetchone()[0]
