@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-from RFM69registers import *
+from .RFM69registers import *
 import spidev
 import RPi.GPIO as GPIO
 import time
