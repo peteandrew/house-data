@@ -20,8 +20,10 @@ def get_rfm69_temp():
 
         node_type = chr(rfm69_data[0])
         if node_type == "R":
-            valHex = "0x%02x%02x" % (rfm69_data[3], rfm69_data[4])
-            valInt = int(valHex, 16)
+            # MSB is high when temperature is negative
+            valInt = (rfm69_data[3] & 0x7f) << 8 | rfm69_data[4]
+            if rfm69_data[3] & 0x80:
+                valInt = -valInt
             tempFull = valInt / 10
 
         else:
