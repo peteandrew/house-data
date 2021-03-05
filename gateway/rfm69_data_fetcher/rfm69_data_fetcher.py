@@ -10,23 +10,32 @@ from RFM69.RFM69registers import *
 rfm69 = RFM69.RFM69(RF69_433MHZ, 1, 100, False, intPin=22, rstPin=18)
 rfm69.encrypt("sampleEncryptKey")
 
+MQTT_SERVER = "192.168.0.147"
+MEASUREMENT_TYPES = [("temperature", "sensors/temp/"), ("humidity", "sensors/humidity/")]
 
-def get_rfm69_temp():
+
+def get_rfm69_data():
     if rfm69.receiveDone():
         rfm69_sender = rfm69.SENDERID
         rfm69_data = rfm69.DATA
         rfm69_rssi = rfm69.RSSI
         rfm69.receiveBegin()
 
+        measurements = {}
+
         node_type = chr(rfm69_data[0])
         if node_type == "R":
+            # RHT03 node
+            valInt = rfm69_data[1] << 8 | rfm69_data[2]
+            measurements["humidity"] = valInt / 10
             # MSB is high when temperature is negative
             valInt = (rfm69_data[3] & 0x7f) << 8 | rfm69_data[4]
             if rfm69_data[3] & 0x80:
                 valInt = -valInt
-            tempFull = valInt / 10
+            measurements["temperature"] = valInt / 10
 
         else:
+            # DS18B20 node
             temp_data_msb = rfm69_data[0]
             temp_data_lsb = rfm69_data[1]
             if len(rfm69_data) > 2:
@@ -47,27 +56,42 @@ def get_rfm69_temp():
             if valInt & 0x01:
                 tempFrac += 0.0625
 
-            tempFull = float(tempWhole) + tempFrac
+            measurements["temperature"] = float(tempWhole) + tempFrac
 
-        return rfm69_sender, tempFull, rfm69_rssi
+        return rfm69_sender, measurements, rfm69_rssi
+
+
+def publish_mqtt_message(topic, node, measurement, rssi):
+    message = str(measurement) + ' ' + str(rssi)
+    print(str(datetime.now()))
+    print(node)
+    print(topic)
+    print(message)
+
+    try:
+        client = mqtt.Client()
+        client.connect(MQTT_SERVER)
+        client.publish(topic + node, message)
+    except OSError as err:
+        print("OS error: {0}".format(err))
 
 
 while True:
     try:
-        rfm69_temp = get_rfm69_temp()
-        if rfm69_temp:
-            node = str(rfm69_temp[0])
-            message = str(rfm69_temp[1]) + ' ' + str(rfm69_temp[2])
-            print(str(datetime.now()))
-            print(node)
-            print(message)
+        rfm69_data = get_rfm69_data()
+        if rfm69_data:
+            node = str(rfm69_data[0])
+            measurements = rfm69_data[1]
+            rssi = rfm69_data[2]
 
-            try:
-                client = mqtt.Client()
-                client.connect('192.168.0.147')
-                client.publish('sensors/temp/' + node, message)
-            except OSError as err:
-                print("OS error: {0}".format(err))
+            for measurement_type in MEASUREMENT_TYPES:
+                if measurement_type[0] in measurements:
+                    publish_mqtt_message(
+                        measurement_type[1],
+                        node,
+                        measurements[measurement_type[0]],
+                        rssi
+                    )
 
         time.sleep(0.1)
 
